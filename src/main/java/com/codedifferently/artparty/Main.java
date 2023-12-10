@@ -1,15 +1,132 @@
 package com.codedifferently.artparty;
 
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.util.Scanner;
+
 public class Main {
 
     public static void main(String[] args) {
-        String firstName = "John";
-        String lastName = "Doe";
-        String email = "john.doe@email.com";
+        String url = "jdbc:mysql://localhost:3306/GuestBook";
+        String user = "root";
+        String password = "my-secret-pw";
 
-        Guest guest = new Guest(firstName, lastName, email);
-        GuestORM guestORM = new GuestORM();
-        guestORM.create(guest);
+        //Establishing connection
+        try (Connection connection = DriverManager.getConnection(url, user, password)) {
+            GuestORM guestORM = new GuestORM(connection);
+            Scanner scanner = new Scanner(System.in);
+
+            while (true) {
+                System.out.println("Choose an action: \n1. Create Guest\n2. Read Guest\n3. Update Guest\n4. Delete Guest\n5. Exit ");
+                System.out.println("Enter your choice: ");
+                int choice = scanner.nextInt();
+
+                switch (choice) {
+                    case 1:
+                        createGuest(scanner, guestORM);
+                        break;
+                    case 2:
+                        readGuest(scanner, guestORM);
+                        break;
+                    case 3:
+                        updateGuest(scanner, guestORM);
+                        break;
+                    case 4:
+                        deleteGuest(scanner, guestORM);
+                        break;
+                    case 5:
+                        System.out.println("Exiting...");
+                        return;
+                    default:
+                        System.out.println("Invalid choice. PLease choose again.");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createGuest(Scanner scanner, GuestORM guestORM) {
+        System.out.println("Creating a new guest");
+        scanner.nextLine();
+
+        System.out.print("Enter First Name: ");
+        String firstName = scanner.nextLine();
+
+        System.out.print("Enter Last Name: ");
+        String lastName = scanner.nextLine();
+
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+
+        System.out.print("Enter Phone Number: ");
+        String phoneNumber = scanner.nextLine();
+
+        System.out.print("Enter Reason For Visit: ");
+        String reasonForVisit = scanner.nextLine();
+
+        Guest guest = new Guest(firstName, lastName, email, phoneNumber, reasonForVisit);
+        guestORM.createGuest(guest); //create a guest
+        System.out.println("Guest created successfully.");
+    }
+
+    private static void readGuest(Scanner scanner, GuestORM guestORM) {
+        System.out.print("Enter the ID of the guest to read: ");
+        long id = scanner.nextLong();
+        Guest guest = guestORM.readGuest(id);
+        if (guest != null) {
+            System.out.println("Guest Details: " + guest);
+        } else {
+            System.out.println("Guest not found.");
+        }
+    }
+
+    private static void updateGuest(Scanner scanner, GuestORM guestORM) {
+        System.out.println("Updating a guest...");
+        System.out.print("Enter ID of guest to update: ");
+        long id = scanner.nextLong();
+        scanner.nextLine();
+
+        // Fetch existing invite
+        Guest guest = guestORM.readGuest(id);
+        if (guest == null) {
+            System.out.println("Guest not found.");
+            return;
+        }
+
+        System.out.print("Enter new First Name (leave blank to keep current): ");
+        String firstName = scanner.nextLine();
+
+        System.out.print("Enter new Last Name (leave blank to keep current): ");
+        String lastName = scanner.nextLine();
+
+        System.out.print("Enter new Email (leave blank to keep current): ");
+        String email = scanner.nextLine();
+
+        System.out.print("Enter new Phone Number (leave blank to keep current): ");
+        String phoneNumber = scanner.nextLine();
+
+        System.out.print("Enter new Reason For Visit (leave blank to keep current): ");
+        String reasonForVisit = scanner.nextLine();
+
+
+        if (!firstName.isEmpty()) guest.setFirstName(firstName);
+        if (!lastName.isEmpty()) guest.setLastName(lastName);
+        if (!email.isEmpty()) guest.setEmail(email);
+        if (!phoneNumber.isEmpty()) guest.setPhoneNumber(phoneNumber);
+        if (!reasonForVisit.isEmpty()) guest.setReasonForVisit(reasonForVisit);
+
+
+        guestORM.updateGuest(guest);
+        System.out.println("Guest updated successfully.");
+    }
+
+    private static void deleteGuest(Scanner scanner, GuestORM guestORM) {
+        System.out.print("Enter guest ID to delete: ");
+        long id = scanner.nextLong();
+        guestORM.deleteGuest(id);
+        System.out.println("Guest deleted successfully.");
     }
 
 }

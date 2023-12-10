@@ -6,43 +6,79 @@ import java.sql.*;
 //object relation mapper
 //CRUD
 public class GuestORM {
-    private Connection conn;
-    public Guest create(Guest guest){
-        Boolean connected = createConnection();
-        if(!connected){
-            return null;
-        }
+    private Connection connection;
+
+    public GuestORM(Connection connection) {this.connection = connection;}
+
+    public Boolean createGuest(Guest guest) {
         try {
-            String sql = "INSERT INTO GuestBook.Guest (first_name, last_name, email, phone_number, reason_for_visit) VALUES (?, ?, ?, ?, ?)";
-            PreparedStatement preparedStatement = conn.prepareStatement(sql);
-            // Set parameter values
-            preparedStatement.setString(1, guest.getFirstName());
-            preparedStatement.setString(2, guest.getLastName());
-            preparedStatement.setString(3, guest.getEmail());
-            preparedStatement.setString(4, guest.getPhoneNumber());
-            preparedStatement.setString(5, guest.getReasonForVisit());
-
-            int rowsAffected = preparedStatement.executeUpdate();
-
-            System.out.println(rowsAffected + " row(s) affected.");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
-
-    }
-
-    private Boolean createConnection() {
-        String url = "jdbc:mysql://localhost:3306/GuestBook";
-        String user = "root";
-        String password = "my-secret-pw";
-        try {
-            conn = DriverManager.getConnection(url, user, password);
-            System.out.println("Connected to the database");
+            PreparedStatement ps = connection.prepareStatement("INSERT INTO Guest (first_name, last_name, email, phone_number, reason_for_visit) VALUES (?, ?, ?, ?, ?)");
+            ps.setString(1, guest.getFirstName());
+            ps.setString(2, guest.getLastName());
+            ps.setString(3, guest.getEmail());
+            ps.setString(4, guest.getPhoneNumber());
+            ps.setString(5, guest.getReasonForVisit());
+            ps.executeUpdate();
             return true;
         } catch (SQLException e) {
-            System.out.println("Failed to make connection");
             return false;
         }
     }
+    // Read (Select)
+    public Guest readGuest(long id) {
+        try {
+            PreparedStatement ps = connection.prepareStatement("SELECT * FROM Guest WHERE id = ?");
+            ps.setLong(1, id);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                Guest guest = new Guest(
+                        rs.getString("first_name"),
+                        rs.getString("last_name"),
+                        rs.getString("email"),
+                        rs.getString("phone_number"),
+                        rs.getString("reason_for_visit"));
+                guest.setId(id);
+                return guest;
+            }
+        } catch (SQLException e) {
+            // Handle exception
+        }
+        return null;
+    }
+
+    // Update
+    public Boolean updateGuest(Guest guest) {
+        try {
+            PreparedStatement ps = connection.prepareStatement("UPDATE Guest SET first_name = ?, last_name = ?, phone_number = ?, email = ?, reason_for_visit = ? WHERE id = ?");
+            ps.setString(1, guest.getFirstName());
+            ps.setString(2, guest.getLastName());
+            ps.setString(3, guest.getPhoneNumber());
+            ps.setString(4, guest.getEmail());
+            ps.setString(5, guest.getReasonForVisit());
+            ps.setLong(6, guest.getId());
+            System.out.println("This is the guest id " + guest.getId());
+            ps.executeUpdate();
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            System.out.println("SQLException: " + e.getMessage());
+            System.out.println("SQLState: " + e.getSQLState());
+            System.out.println("VendorError: " + e.getErrorCode());
+            return false;// Handle exception
+        }
+    }
+
+    // Delete
+    public Boolean deleteGuest(long id) {
+        try {
+            PreparedStatement ps = connection.prepareStatement("DELETE FROM Guest WHERE id = ?");
+            ps.setLong(1, id);
+            ps.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
 }

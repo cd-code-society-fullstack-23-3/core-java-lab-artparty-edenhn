@@ -1,19 +1,19 @@
 package com.codedifferently.artparty;
 
 public class Guest {
-    private Long id;
+    private long id;
     private String firstName;
     private String lastName;
     private String phoneNumber;
     private String email;
     private String reasonForVisit;
 
-    public Guest(String firstName, String lastName, String email){
+    public Guest( String firstName, String lastName, String email, String phoneNumber, String reasonForVisit){
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.phoneNumber = "";
-        this.reasonForVisit = "";
+        this.phoneNumber = phoneNumber;
+        this.reasonForVisit = reasonForVisit;
     }
 
     //this constructor's only job is to make sure these fields are not null;
@@ -23,6 +23,14 @@ public class Guest {
         this.email = "";
         this.phoneNumber = "";
         this.reasonForVisit = "";
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getFirstName() {
@@ -65,9 +73,10 @@ public class Guest {
         this.reasonForVisit = reasonForVisit;
     }
 
+    @Override
     public String toString(){
-        return String.format("Id: %d; FirstName:%s; LastName:%s; Email:%s; PhoneNumber:%s; ReasonForVisit:%s",
-                id, firstName, lastName, email, phoneNumber, reasonForVisit);
+        return String.format("FirstName:%s; LastName:%s; Email:%s; PhoneNumber:%s; ReasonForVisit:%s",
+              firstName, lastName, email, phoneNumber, reasonForVisit);
     }
 
 }
